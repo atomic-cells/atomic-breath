@@ -3,7 +3,12 @@ import {LitElement, html, css} from 'lit';
 export class AtomicBreath extends LitElement {
   static properties = {
     totalSeconds: {type: Number},
+    allowSkip: {type: Boolean},
     _remainingSeconds: {
+      type: Number,
+      state: true,
+    },
+    _intervalId: {
       type: Number,
       state: true,
     },
@@ -22,8 +27,8 @@ export class AtomicBreath extends LitElement {
 
   constructor() {
     super();
-    this.name = '';
     this.totalSeconds = 0;
+    this.allowSkip = false;
   }
 
   connectedCallback() {
@@ -32,12 +37,27 @@ export class AtomicBreath extends LitElement {
     this.reduceTime();
   }
 
+  handleSkip() {
+    this._remainingSeconds = 0;
+    clearInterval(this._intervalId);
+  }
+
   reduceTime() {
-    setTimeout(() => this._remainingSeconds--, 1000);
+    this._intervalId = setInterval(() => this.reducingTime(), 1000);
+  }
+
+  reducingTime() {
+    this._remainingSeconds--;
+
+    if (!this._remainingSeconds) {
+      clearInterval(this._intervalId);
+    }
   }
 
   render() {
-    return html` Remaining time: ${this._remainingSeconds} `;
+    const skipButton = html`<button @click="${this.handleSkip}">skip</button>`;
+    return html` Remaining time: ${this._remainingSeconds} -
+    ${this.allowSkip ? skipButton : ''}`;
   }
 }
 
